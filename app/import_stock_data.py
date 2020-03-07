@@ -23,6 +23,6 @@ def insert_data_to_database(isStocks=False):
             else :
                 df = stock.read_tdx_lday_file(path+i)
                 code = i.replace('.day','')
-                df.to_sql(code, engine, index=True, if_exists='replace')
+                df.to_sql(code, engine, index=False, if_exists='replace')
             
 insert_data_to_database()

@@ -33,6 +33,8 @@ def filter_code(isRealTime=False):
     filePath="vipdoc/szshdata/"
     filter_result=[]
     filter_result_none=[]
+    # 停牌
+    filter_result_stop=[]
     for root, dirs, files in os.walk(filePath):
         files.sort()
         for f in files:
@@ -42,8 +44,13 @@ def filter_code(isRealTime=False):
         code=i[0:8]
         _code=i[2:8]
         df=pd.read_csv(filePath+code+'.csv',encoding='gbk')
+        # df.drop([len(df)-1],inplace=True)
         if isRealTime:
             cur_real_df = ts.get_realtime_quotes(_code)
+            # 考虑停牌的情况
+            if (float(cur_real_df['open'])==0):
+                filter_result_stop.append(_code)
+                continue
             inser_row = stock.get_insert_row(cur_real_df)
             df_append = pd.DataFrame(inser_row, index=[len(df)])
             df = df.append(df_append)
@@ -53,10 +60,15 @@ def filter_code(isRealTime=False):
             log.info(code)
         else :
             filter_result_none.append(_code)
-    log.info(filter_result_none)
+    # log.info(filter_result_none)
+    if(len(filter_result_stop)>0):
+        log.info('Stop:'+','.join(filter_result_stop))
     log.info('Total:'+str(len(filter_result)+len(filter_result_none)))
     today=datetime.date.today()
-    file_object_path = 'vipdoc/result/' + today.strftime('%Y-%m-%d') +'.txt'
+    real_file=''
+    if isRealTime:
+        real_file='-r-'
+    file_object_path = 'vipdoc/result/' + today.strftime('%Y-%m-%d')+ real_file +'.txt'
     file_object = open(file_object_path, 'w+')
     file_object.writelines(','.join(filter_result))
 # 程序入口

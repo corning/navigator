@@ -4,6 +4,7 @@ import datetime
 import struct
 import sys
 import os
+import decimal
 
 class Stock(object):
     # def __init__(self):
@@ -14,12 +15,12 @@ class Stock(object):
             _date=date
         inser_row = {
             'date':_date,
-            'open':round(float(data_frame.loc[0,"open"]),2),
-            'high':round(float(data_frame.loc[0,"high"]),2),
-            'low':round(float(data_frame.loc[0,"low"]),2),
-            'close':round(float(data_frame.loc[0,"price"]),2),
-            'amount':round(float(data_frame.loc[0,"amount"]),1),
-            'volume':int(data_frame.loc[0,"volume"])
+            'open':str(round(float(data_frame.loc[0,"open"]),2)),
+            'high':str(round(float(data_frame.loc[0,"high"]),2)),
+            'low':str(round(float(data_frame.loc[0,"low"]),2)),
+            'close':str(round(float(data_frame.loc[0,"price"]),2)),
+            'amount':str(round(float(data_frame.loc[0,"amount"]),1)),
+            'volume':str(data_frame.loc[0,"volume"])
         }
         return inser_row
 
@@ -32,9 +33,9 @@ class Stock(object):
     def get_EMA(self,df,N):   
         for i in range(len(df)):      
             if i==0:            
-                df.loc[i,'ema']=float(df.loc[i,'close'])        
+                df.loc[i,'ema']=decimal.Decimal(df.loc[i,'close'])        
             if i>0 :            
-                df.loc[i,'ema']=(2*float(df.loc[i,'close'])+(N-1)*float(df.loc[i-1,'ema']))/(N+1)
+                df.loc[i,'ema']=(2*decimal.Decimal(df.loc[i,'close'])+(N-1)*decimal.Decimal(df.loc[i-1,'ema']))/(N+1)
         ema=list(df['ema'])
         return ema
 
@@ -50,17 +51,29 @@ class Stock(object):
                 df.loc[i,'dea']=df.loc[i,'diff']        
             if i>0:            
                 df.loc[i,'dea']=(2*df.loc[i,'diff']+(M-1)*df.loc[i-1,'dea'])/(M+1)    
-            df['macd']=2*(df['diff']-df['dea'])   
+            df['macd']=2*(df['diff']-df['dea'])
 
         diff1 =df.loc[i,'diff']
         dif1=round(diff1,3)
+        # print(diff1)
         diff2 =df.loc[i-1,'diff']
         dif2=round(diff2,3)
-        vo1= df.loc[i,'volume']
-        vo2= df.loc[i-1,'volume']
+        # print(dif2)
+        vo1= int(df.loc[i,'volume'])
+        vo2= int(df.loc[i-1,'volume'])
+        # print(vo1)
+        # print(vo2)
         
-        close1= df.loc[i,'close']
-        close2= df.loc[i-1,'close']
+        close1= float(df.loc[i,'close'])
+        close2= float(df.loc[i-1,'close'])
+        # print(close1)
+        # print(close2)
+
+        # print(dif1 > dif2)
+        # print(dif1 < 0.06)
+        # print(dif1 > -0.06)
+        # print(vo1 > vo2)
+        # print(close1 > close2)
 
         if dif1 > dif2 and dif1 < 0.06 and dif1 > -0.06 and vo1 > vo2 and close1 > close2 :
             return dif1
